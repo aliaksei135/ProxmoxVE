@@ -6,7 +6,7 @@ source <(curl -fsSL https://raw.githubusercontent.com/aliaksei135/ProxmoxVE/refs
 # Source: https://github.com/arpanghosh8453/garmin-grafana
 
 APP="garmin-grafana"
-var_tags="${var_tags:-sports;monitoring;visualization}"
+var_tags="${var_tags:-sports;visualization}"
 var_cpu="${var_cpu:-2}"
 var_ram="${var_ram:-2048}"
 var_disk="${var_disk:-8}"
