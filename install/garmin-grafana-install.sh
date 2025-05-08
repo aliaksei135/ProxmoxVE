@@ -26,7 +26,7 @@ $STD apt-get install -y lsb-release
 $STD apt-get install -y gnupg2
 # garmin-grafana dependencies
 $STD apt-get install -y python3
-$STD apt-get install -y python3-uv
+setup_uv
 msg_ok "Installed Dependencies"
 
 msg_info "Setting up InfluxDB Repository"
