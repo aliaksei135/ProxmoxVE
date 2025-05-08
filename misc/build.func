@@ -273,7 +273,8 @@ update_motd_ip() {
 
 # Function to download & save header files
 get_header() {
-  local app_name=$(echo "${APP,,}" | tr -d ' ')
+  local app_name
+  app_name=$(echo "${APP,,}" | tr -d ' ')
   local header_url="https://raw.githubusercontent.com/aliaksei135/ProxmoxVE/refs/heads/garmin-grafana/ct/headers/${app_name}"
   local local_header_path="/usr/local/community-scripts/headers/${app_name}"
 
@@ -291,7 +292,8 @@ get_header() {
 
 # This function sets the APP-Name into an ASCII Header in Slant, figlet needed on proxmox main node.
 header_info() {
-  local app_name=$(echo "${APP,,}" | tr -d ' ')
+  local app_name
+  app_name=$(echo "${APP,,}" | tr -d ' ')
   local header_content
 
   # Download & save Header-File locally
