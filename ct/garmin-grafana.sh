@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+source <(curl -fsSL https://raw.githubusercontent.com/aliaksei135/ProxmoxVE/refs/heads/garmin-grafana/misc/build.func)
+# Copyright (c) 2021-2025 community-scripts ORG
+# Author: aliaksei135
+# License: MIT | https://github.com/community-scripts/ProxmoxVE/raw/main/LICENSE
+# Source: https://github.com/arpanghosh8453/garmin-grafana
+
+APP="garmin-grafana"
+var_tags="${var_tags:-sports;monitoring;visualization}"
+var_cpu="${var_cpu:-2}"
+var_ram="${var_ram:-2048}"
+var_disk="${var_disk:-8}"
+var_os="${var_os:-debian}"
+var_version="${var_version:-12}"
+var_unprivileged="${var_unprivileged:-1}"
+
+header_info "$APP"
+variables
+color
+catch_errors
+
+# this only updates garmin-grafana, not influxdb or grafana, which are upgraded with apt
+function update_script() {
+    header_info
+    check_container_storage
+    check_container_resources
+
+    # Check if installation is present | -f for file, -d for folder
+    if [[ ! -d /opt/garmin-grafana/ ]]; then
+        msg_error "No ${APP} Installation Found!"
+        exit
+    fi
+
+    # Crawling the new version and checking whether an update is required
+    RELEASE=$(curl -fsSL https://api.github.com/repos/arpanghosh8453/garmin-grafana/releases/latest | grep "tag_name" | awk '{print substr($2, 2, length($2)-3) }')
+    if [[ ! -d /opt/garmin-grafana/ ]] || [[ "${RELEASE}" != "$(cat /opt/${APP}_version.txt)" ]] || [[ ! -f /opt/${APP}_version.txt ]]; then
+        # Stopping Services
+        msg_info "Stopping $APP"
+        systemctl stop garmin-grafana
+        systemctl stop influxdb
+        msg_ok "Stopped $APP"
+
+        # Creating Backup
+        msg_info "Creating Backup"
+        tar -czf "/opt/${APP}_backup_$(date +%F).tar.gz" /opt/garmin-grafana/.garminconnect /opt/garmin-grafana/.env
+        mv /opt/garmin-grafana/ /opt/garmin-grafana-backup/
+        msg_ok "Backup Created"
+
+        # Execute Update
+        msg_info "Updating $APP to v${RELEASE}"
+        curl -fsSL -o "${RELEASE}.zip" "https://github.com/arpanghosh8453/garmin-grafana/archive/refs/tags/${RELEASE}.zip"
+        unzip -q "${RELEASE}.zip"
+        mv "garmin-grafana-${RELEASE}/" "/opt/garmin-grafana"
+        rm -f "${RELEASE}.zip"
+        # Install python dependencies with uv
+        $STD uv sync --locked --project /opt/garmin-grafana/
+        # Copy across grafana data
+        cp -r /opt/garmin-grafana/Grafana_Datasource /etc/grafana/provisioning/datasources
+        cp -r /opt/garmin-grafana/Grafana_Dashboard /etc/grafana/provisioning/dashboards
+        # Copy back the env and token files
+        cp /opt/garmin-grafana-backup/.env /opt/garmin-grafana/.env
+        cp -r /opt/garmin-grafana-backup/.garminconnect /opt/garmin-grafana/.garminconnect
+        msg_ok "Updated $APP to v${RELEASE}"
+
+        # Starting Services
+        msg_info "Starting $APP"
+        systemctl start garmin-grafana
+        systemctl start influxdb
+        systemctl start grafana-server
+        msg_ok "Started $APP"
+
+        # Cleaning up
+        msg_info "Cleaning Up"
+        rm -rf /opt/garmin-grafana-backup
+        msg_ok "Cleanup Completed"
+
+        # Last Action
+        echo "${RELEASE}" >/opt/${APP}_version.txt
+        msg_ok "Update Successful"
+    else
+        msg_ok "No update required. ${APP} is already at v${RELEASE}"
+    fi
+    exit
+}
+
+start
+build_container
+description
+
+msg_ok "Completed Successfully!\n"
+echo -e "${CREATING}${GN}${APP} setup has been successfully initialized!${CL}"
+echo -e "${INFO}${YW} Access it using the following URL:${CL}"
+echo -e "${TAB}${GATEWAY}${BGN}http://${IP}:[PORT]${CL}"
