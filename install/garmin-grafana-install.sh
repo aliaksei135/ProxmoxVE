@@ -60,9 +60,9 @@ msg_info "Setting up Grafana"
 GRAFANA_USER="admin"
 GRAFANA_PASS=$(openssl rand -base64 18 | tr -dc 'a-zA-Z0-9' | cut -c1-13)
 # Create Grafana user
-$STD grafana-cli admin reset-admin-password "${GRAFANA_PASS}"
-# Install plugins
-$STD grafana-cli plugins install marcusolsson-hourly-heatmap-panel
+# $STD grafana-cli admin reset-admin-password "${GRAFANA_PASS}"
+# # Install plugins
+# $STD grafana-cli plugins install marcusolsson-hourly-heatmap-panel
 # Output credentials to file
 {
   echo "Grafana Credentials"
