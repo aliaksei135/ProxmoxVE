@@ -60,16 +60,16 @@ msg_info "Setting up Grafana"
 GRAFANA_USER="admin"
 GRAFANA_PASS=$(openssl rand -base64 18 | tr -dc 'a-zA-Z0-9' | cut -c1-13)
 # Create Grafana user
-$STD grafana-cli admin reset-admin-password "${GRAFANA_PASS}"
+$STD grafana cli admin reset-admin-password "${GRAFANA_PASS}"
 # Install plugins
-$STD grafana-cli plugins install marcusolsson-hourly-heatmap-panel
+$STD grafana cli plugins install marcusolsson-hourly-heatmap-panel
 # Output credentials to file
 {
   echo "Grafana Credentials"
   echo "Grafana User: ${GRAFANA_USER}"
   echo "Grafana Password: ${GRAFANA_PASS}"
 } >>~/.garmin-grafana.creds
-msg_ok "Setup Grafana"
+msg_ok "Set up Grafana"
 
 # Setup App
 msg_info "Installing garmin-grafana"
@@ -123,7 +123,7 @@ fi
 
 # Restart Grafana to pick up the provisioned data sources and dashboards
 $STD systemctl restart grafana-server
-msg_ok "Setup garmin-grafana"
+msg_ok "Set up garmin-grafana"
 
 # Creating Service (if needed)
 msg_info "Creating Service"
