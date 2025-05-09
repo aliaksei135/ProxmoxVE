@@ -100,7 +100,8 @@ mv "garmin-grafana-${RELEASE}/" "/opt/garmin-grafana"
 # Create dir for garmin tokens
 mkdir -p /opt/garmin-grafana/.garminconnect
 # Install python dependencies with uv
-$STD uv sync --locked --project /opt/garmin-grafana/
+# Set uv options to use system python3 and sitepackages
+$STD uv sync --locked --no-build-isolation --no-managed-python --project /opt/garmin-grafana/
 # Copy across grafana data
 cp -r /opt/garmin-grafana/Grafana_Datasource /etc/grafana/provisioning/datasources
 cp -r /opt/garmin-grafana/Grafana_Dashboard /etc/grafana/provisioning/dashboards
