@@ -117,7 +117,7 @@ EOF
 if [ -z "$(ls -A /opt/garmin-grafana/.garminconnect)" ]; then
   # Run the script once to prompt for credential
   msg_info "Creating Garmin credentials, this will timeout in 60 seconds"
-  timeout 60s uv run /opt/garmin-grafana/garmin_fetch.py
+  timeout 60s uv run /opt/garmin-grafana/src/garmin_grafana/garmin_fetch.py
   # Check if there is anything in the token dir now
   if [ -z "$(ls -A /opt/garmin-grafana/.garminconnect)" ]; then
     msg_error "Failed to create a token"
@@ -137,7 +137,7 @@ Description=garmin-grafana Service
 After=network.target
 
 [Service]
-ExecStart=uv run /opt/garmin-grafana/garmin_fetch.py
+ExecStart=uv run /opt/garmin-grafana/src/garmin_grafana/garmin_fetch.py
 Restart=always
 EnvironmentFile=/opt/garmin-grafana/.env
 
