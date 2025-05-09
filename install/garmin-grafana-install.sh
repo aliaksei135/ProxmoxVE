@@ -105,8 +105,8 @@ mkdir -p /opt/garmin-grafana/.garminconnect
 # Install python dependencies with uv
 $STD uv sync --locked --project /opt/garmin-grafana/
 # Copy across grafana data
-cp -r /opt/garmin-grafana/Grafana_Datasource /etc/grafana/provisioning/datasources
-cp -r /opt/garmin-grafana/Grafana_Dashboard /etc/grafana/provisioning/dashboards
+cp -r /opt/garmin-grafana/Grafana_Datasource/* /etc/grafana/provisioning/datasources
+cp -r /opt/garmin-grafana/Grafana_Dashboard/* /etc/grafana/provisioning/dashboards
 echo "${RELEASE}" >"/opt/garmin-grafana_version.txt"
 msg_ok "Installed garmin-grafana"
 
