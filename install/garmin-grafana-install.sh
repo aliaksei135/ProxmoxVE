@@ -70,15 +70,17 @@ $STD apt-get update
 $STD apt-get install -y grafana
 systemctl start grafana-server
 systemctl enable --now -q grafana-server.service
+sleep 10
 msg_ok "Installed Grafana"
 
 msg_info "Setting up Grafana"
 GRAFANA_USER="admin"
 GRAFANA_PASS=$(openssl rand -base64 18 | tr -dc 'a-zA-Z0-9' | cut -c1-13)
 # Create Grafana user
-# $STD grafana-cli admin reset-admin-password "${GRAFANA_PASS}"
+$STD grafana-cli admin reset-admin-password "${GRAFANA_PASS}"
 # # Install plugins
-# $STD grafana-cli plugins install marcusolsson-hourly-heatmap-panel
+$STD grafana-cli plugins install marcusolsson-hourly-heatmap-panel
+$STD systemctl restart grafana-server
 # Output credentials to file
 {
   echo "Grafana Credentials"
