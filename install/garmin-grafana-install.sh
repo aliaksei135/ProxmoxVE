@@ -75,8 +75,12 @@ msg_ok "Setup Grafana"
 msg_info "Installing garmin-grafana"
 RELEASE=$(curl -fsSL https://api.github.com/repos/arpanghosh8453/garmin-grafana/releases/latest | grep "tag_name" | awk '{print substr($2, 2, length($2)-3) }')
 curl -fsSL -o "${RELEASE}.zip" "https://github.com/arpanghosh8453/garmin-grafana/archive/refs/tags/${RELEASE}.zip"
-unzip -q "${RELEASE}.zip" -d /opt/garmin-grafana
-# mv "${RELEASE}/" "/opt/garmin-grafana"
+unzip -q "${RELEASE}.zip"
+# Remove the v prefix to RELEASE if it exists
+if [[ "${RELEASE}" == v* ]]; then
+  RELEASE="${RELEASE:1}"
+fi
+mv "garmin-grafana-${RELEASE}/" "/opt/garmin-grafana"
 # Create dir for garmin tokens
 mkdir -p /opt/garmin-grafana/.garminconnect
 # Install python dependencies with uv
