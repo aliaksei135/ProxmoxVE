@@ -43,8 +43,22 @@ $STD apt-get update
 $STD apt-get install -y influxdb
 curl -fsSL "https://dl.influxdata.com/chronograf/releases/chronograf_1.10.7_amd64.deb" -o "$(basename "https://dl.influxdata.com/chronograf/releases/chronograf_1.10.7_amd64.deb")"
 $STD dpkg -i chronograf_1.10.7_amd64.deb
-$STD systemctl enable --now influxdb
 msg_ok "Installed InfluxDB"
+
+msg_info "Setting up InfluxDB"
+# Patch the config file to use the tsi1 index
+$STD sed -i 's/# index-version = "inmem"/index-version = "tsi1"/' /etc/influxdb/influxdb.conf
+
+# Create InfluxDB user and database
+INFLUXDB_USER="garmin_grafana_user"
+INFLUXDB_PASSWORD=$(openssl rand -base64 18 | tr -dc 'a-zA-Z0-9' | cut -c1-13)
+INFLUXDB_NAME="GarminStats"
+$STD influx -execute "CREATE DATABASE ${INFLUXDB_NAME}"
+$STD influx -execute "CREATE USER ${INFLUXDB_USER} WITH PASSWORD '${INFLUXDB_PASSWORD}'"
+$STD influx -execute "GRANT ALL ON ${INFLUXDB_NAME} TO ${INFLUXDB_USER}"
+# Start the service
+$STD systemctl enable --now influxdb
+msg_ok "Set up InfluxDB"
 
 msg_info "Setting up Grafana Repository"
 curl -fsSL "https://apt.grafana.com/gpg.key" -o "/usr/share/keyrings/grafana.key"
@@ -107,9 +121,9 @@ cat <<EOF >/opt/garmin-grafana/.env
 INFLUXDB_HOST=localhost
 INFLUXDB_PORT=8086
 INFLUXDB_ENDPOINT_IS_HTTP=True
-INFLUXDB_USERNAME=garmin-grafana-user
-INFLUXDB_PASSWORD=$(openssl rand -base64 18 | tr -dc 'a-zA-Z0-9' | cut -c1-13)
-INFLUXDB_DATABASE=GarminStats
+INFLUXDB_USERNAME=${INFLUXDB_USER}
+INFLUXDB_PASSWORD=${INFLUXDB_PASSWORD}
+INFLUXDB_DATABASE=${INFLUXDB_NAME}
 GARMIN_IS_CN=${GARMIN_CN}
 TOKEN_DIR=/opt/garmin-grafana/.garminconnect
 EOF
