@@ -134,9 +134,22 @@ EOF
 # garmin-grafana usually prompts the user for email and password (and MFA) on first run,
 # then stores a refreshable token. We try to avoid storing user credentials in the env vars
 if [ -z "$(ls -A /opt/garmin-grafana/.garminconnect)" ]; then
+  # Get the email and password from the user
+  msg_info "Please enter your Garmin Connect credentials (these are used to create a token and are NOT stored):"
+  read -rp "Email: " GARMIN_EMAIL
+  read -rp "Password: " GARMIN_PASSWORD
+  read -rp "MFA Code (if applicable, leave blank if not): " GARMIN_MFA
   # Run the script once to prompt for credential
   msg_info "Creating Garmin credentials, this will timeout in 60 seconds"
-  timeout 60s uv run --env-file /opt/garmin-grafana/.env --project /opt/garmin-grafana/ /opt/garmin-grafana/src/garmin_grafana/garmin_fetch.py
+  timeout 60s uv run --env-file /opt/garmin-grafana/.env --project /opt/garmin-grafana/ /opt/garmin-grafana/src/garmin_grafana/garmin_fetch.py <<EOF
+${GARMIN_EMAIL}
+${GARMIN_PASSWORD}
+${GARMIN_MFA}
+EOF
+  # Clear the credentials from the terminal
+  unset GARMIN_EMAIL
+  unset GARMIN_PASSWORD
+  unset GARMIN_MFA
   # Check if there is anything in the token dir now
   if [ -z "$(ls -A /opt/garmin-grafana/.garminconnect)" ]; then
     msg_error "Failed to create a token"
