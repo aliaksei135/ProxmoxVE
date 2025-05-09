@@ -135,6 +135,7 @@ EOF
 # then stores a refreshable token. We try to avoid storing user credentials in the env vars
 if [ -z "$(ls -A /opt/garmin-grafana/.garminconnect)" ]; then
   # Get the email and password from the user
+  stop_spinner
   msg_info "Please enter your Garmin Connect credentials (these are used to create a token and are NOT stored):"
   read -rp "Email: " GARMIN_EMAIL
   read -rp "Password: " GARMIN_PASSWORD
