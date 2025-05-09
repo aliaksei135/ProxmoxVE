@@ -37,8 +37,20 @@ function update_script() {
         # Stopping Services
         msg_info "Stopping $APP"
         systemctl stop garmin-grafana
+        systemctl stop grafana-server
         systemctl stop influxdb
         msg_ok "Stopped $APP"
+
+        # Get required environment variables from the .env file
+        if [[ ! -f /opt/garmin-grafana/.env ]]; then
+            msg_error "No .env file found in /opt/garmin-grafana/.env"
+            exit
+        fi
+        source /opt/garmin-grafana/.env
+        if [[ -z "${INFLUXDB_USER}" || -z "${INFLUXDB_PASSWORD}" || -z "${INFLUXDB_NAME}" ]]; then
+            msg_error "INFLUXDB_USER, INFLUXDB_PASSWORD, or INFLUXDB_NAME not set in .env file"
+            exit
+        fi
 
         # Creating Backup
         msg_info "Creating Backup"
@@ -54,9 +66,16 @@ function update_script() {
         rm -f "${RELEASE}.zip"
         # Install python dependencies with uv
         $STD uv sync --locked --project /opt/garmin-grafana/
+        # Setup grafana provisioning configs
+        # shellcheck disable=SC2016
+        sed -i 's/\${DS_GARMIN_STATS}/garmin_influxdb/g' /opt/garmin-grafana/Grafana_Dashboard/Garmin-Grafana-Dashboard.json
+        sed -i 's/influxdb:8086/localhost:8086/' /opt/garmin-grafana/Grafana_Datasource/influxdb.yaml
+        sed -i "s/influxdb_user/${INFLUXDB_USER}/" /opt/garmin-grafana/Grafana_Datasource/influxdb.yaml
+        sed -i "s/influxdb_secret_password/${INFLUXDB_PASSWORD}/" /opt/garmin-grafana/Grafana_Datasource/influxdb.yaml
+        sed -i "s/GarminStats/${INFLUXDB_NAME}/" /opt/garmin-grafana/Grafana_Datasource/influxdb.yaml
         # Copy across grafana data
-        cp -r /opt/garmin-grafana/Grafana_Datasource /etc/grafana/provisioning/datasources
-        cp -r /opt/garmin-grafana/Grafana_Dashboard /etc/grafana/provisioning/dashboards
+        cp -r /opt/garmin-grafana/Grafana_Datasource/* /etc/grafana/provisioning/datasources
+        cp -r /opt/garmin-grafana/Grafana_Dashboard/* /etc/grafana/provisioning/dashboards
         # Copy back the env and token files
         cp /opt/garmin-grafana-backup/.env /opt/garmin-grafana/.env
         cp -r /opt/garmin-grafana-backup/.garminconnect /opt/garmin-grafana/.garminconnect
@@ -65,8 +84,8 @@ function update_script() {
         # Starting Services
         msg_info "Starting $APP"
         systemctl start garmin-grafana
-        systemctl start influxdb
         systemctl start grafana-server
+        systemctl start influxdb
         msg_ok "Started $APP"
 
         # Cleaning up
