@@ -87,7 +87,7 @@ $STD systemctl restart grafana-server
   echo "Grafana Credentials"
   echo "Grafana User: ${GRAFANA_USER}"
   echo "Grafana Password: ${GRAFANA_PASS}"
-} >>~/.garmin-grafana.creds
+} >>~/garmin-grafana.creds
 msg_ok "Setup Grafana"
 
 # Setup App
