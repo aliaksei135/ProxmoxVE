@@ -89,7 +89,7 @@ $STD systemctl restart grafana-server
   echo "Grafana User: ${GRAFANA_USER}"
   echo "Grafana Password: ${GRAFANA_PASS}"
 } >>~/garmin-grafana.creds
-msg_ok "Setup Grafana"
+msg_ok "Set up Grafana"
 
 # Setup App
 msg_info "Installing garmin-grafana"
@@ -166,7 +166,36 @@ fi
 
 # Restart Grafana to pick up the provisioned data sources and dashboards
 $STD systemctl restart grafana-server
-msg_ok "Setup garmin-grafana"
+
+# Add a script to make the manual bulk data import easier
+cat <<EOF >~/bulk-import.sh
+#!/usr/bin/env bash
+if [[ -z \$1 ]]; then
+  echo "Usage: \$0 <start_date> <end_date>"
+  echo "Example: \$0 2023-01-01 2023-01-31"
+  echo "Date format: YYYY-MM-DD"
+  echo "This will import data from the start_date to the end_date (inclusive)"
+  exit 1
+fi
+
+START_DATE="\$1"
+if [[ -z \$2 ]]; then
+  END_DATE="\$(date +%Y-%m-%d)"
+  echo "No end date provided, using today as end date: \${END_DATE}"
+else
+  END_DATE="\$2"
+fi
+
+# Stop the service if running
+systemctl stop garmin-grafana
+
+MANUAL_START_DATE="\${START_DATE}" MANUAL_END_DATE="\${END_DATE}" uv run --env-file /opt/garmin-grafana/.env --project /opt/garmin-grafana/ /opt/garmin-grafana/src/garmin_grafana/garmin_fetch.py
+
+# Restart the service
+systemctl start garmin-grafana
+EOF
+chmod +x ~/bulk-import.sh
+msg_ok "Set up garmin-grafana"
 
 # Creating Service (if needed)
 msg_info "Creating Service"
