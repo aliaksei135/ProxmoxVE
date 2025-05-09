@@ -26,6 +26,8 @@ $STD apt-get install -y lsb-release
 $STD apt-get install -y gnupg2
 # garmin-grafana dependencies
 $STD apt-get install -y python3
+$STD apt-get install -y python3-requests
+$STD apt-get install -y python3-dotenv
 setup_uv
 msg_ok "Installed Dependencies"
 
