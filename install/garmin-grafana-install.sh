@@ -71,7 +71,8 @@ $STD apt-get install -y grafana
 systemctl start grafana-server
 systemctl daemon-reload
 systemctl enable --now -q grafana-server.service
-sleep 10
+# This avoids the "database is locked" error when running the grafana-cli
+sleep 20
 msg_ok "Installed Grafana"
 
 msg_info "Setting up Grafana"
