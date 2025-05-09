@@ -104,6 +104,13 @@ mv "garmin-grafana-${RELEASE}/" "/opt/garmin-grafana"
 mkdir -p /opt/garmin-grafana/.garminconnect
 # Install python dependencies with uv
 $STD uv sync --locked --project /opt/garmin-grafana/
+# Setup grafana provisioning configs
+# shellcheck disable=SC2016
+sed -i 's/\${DS_GARMIN_STATS}/garmin_influxdb/g' /opt/garmin-grafana/Grafana_Dashboard/Garmin-Grafana-Dashboard.json
+sed -i 's/influxdb:8086/localhost:8086/' /opt/garmin-grafana/Grafana_Datasource/influxdb.yaml
+sed -i "s/influxdb_user/${INFLUXDB_USER}/" /opt/garmin-grafana/Grafana_Datasource/influxdb.yaml
+sed -i "s/influxdb_secret_password/${INFLUXDB_PASSWORD}/" /opt/garmin-grafana/Grafana_Datasource/influxdb.yaml
+sed -i "s/GarminStats/${INFLUXDB_NAME}/" /opt/garmin-grafana/Grafana_Datasource/influxdb.yaml
 # Copy across grafana data
 cp -r /opt/garmin-grafana/Grafana_Datasource/* /etc/grafana/provisioning/datasources
 cp -r /opt/garmin-grafana/Grafana_Dashboard/* /etc/grafana/provisioning/dashboards
