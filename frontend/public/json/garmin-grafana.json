@@ -35,6 +35,10 @@
         {
             "text": "Show login and database credentials:  `cat ~/.garmin-grafana.creds`",
             "type": "info"
+        },
+        {
+            "text": "`garmin-grafana` only imports the past 7 days by default. To import historical data, use the `~/bulk-import.sh` script after installation.",
+            "type": "info"
         }
     ]
 }
